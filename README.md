@@ -1,14 +1,8 @@
-# Template React
+# Demo
 
 [![tests](https://img.shields.io/github/actions/workflow/status/nichoth/template-react/nodejs.yml?style=flat-square)](https://github.com/nichoth/template-react/actions/workflows/nodejs.yml)
 
-
-A template for React projects. This was created with `npm create vite@latest`
-with Typescript + React, and I added some opinions too &mdash;
-[Netlify](https://www.netlify.com/) as host, Netlify lambda functions,
-[@substrate-system/tapout](https://github.com/substrate-system/tapout) for tests,
-and [@preact/signals-react](https://github.com/preactjs/signals/tree/main/packages/react)
-for application state.
+Example application.
 
 <details><summary><h2>Contents</h2></summary>
 
@@ -121,3 +115,4 @@ npm run lint -- --fix
 The React Compiler is not enabled on this template because of its impact on
 dev & build performances. To add it, see
 [this documentation](https://react.dev/learn/react-compiler/installation).
+
