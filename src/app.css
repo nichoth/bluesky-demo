@@ -3,8 +3,8 @@
   margin: 0 auto;
 }
 
-.controls {
-  margin: 1rem auto;
+nav {
+  margin-top: 1rem;
   display: flex;
   gap: 1rem;
 }

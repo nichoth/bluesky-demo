@@ -1,16 +1,33 @@
-import React, {
+import {
     useCallback,
     type FunctionComponent,
 } from 'react'
 import { signal, useSignal } from '@preact/signals-react'
 import Debug from '@substrate-system/debug'
 import { type Api } from './api'
-import { Button } from './components/button'
+// import { Button } from './components/button'
 import './app.css'
+import { reports, type Report } from './fixture'
 
 export const EM_DASH = '\u2014'
 export const NBSP = '\u00A0'
 const debug = Debug(isDev())
+
+// ------------------------------------------------------
+// displays a moderation queue of reported users and content from the
+// atproto network.
+//
+// * static array of reports
+// interface where a moderator can review these reports with necessary details
+// from the network (user profile, post content etc.)
+// ------------------------------------------------------
+
+// four tabs
+
+// * Open app → Queue tab shows unreviewed reports and the reported content.
+// * Choose Approve or Takedown → the item moves to the appropriate tab.
+// * Go to All tab → type a query → results filter in real time across
+//   profile/post text.
 
 // Whenever the `count` signal is updated,
 // the component will re-render automatically
@@ -29,73 +46,96 @@ if (isDev()) {
     window.debug = debug
 }
 
-export const App:FunctionComponent<{ api:typeof Api }> = function App ({ api }) {
-    const isSpinning = useSignal<boolean>(false)
-    const response = useSignal<string|null>(null)
+// if user then DID
+// if post then at URI
 
-    const callApi = useCallback(async (ev:React.MouseEvent) => {
+type Tab = 'Queue'|'Approved'|'Takedown'|'All'
+const tabs:Tab[] = ['Queue', 'Approved', 'Takedown', 'All']
+
+// users
+// https://api.bsky.app/xrpc/app.bsky.actor.getProfile?actor=<did>
+// need DID
+
+// posts
+// https://api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=<at_uri>
+// need at URI
+
+// show all report
+// click tabs
+
+export const App:FunctionComponent<{ api:typeof Api }> = function App () {
+    // const isSpinning = useSignal<boolean>(false)
+    // const response = useSignal<string|null>(null)
+    const tab = useSignal<Tab>('Queue')
+
+    const tabStates = useSignal({
+        Queue: [...reports],
+        Approved: [],
+        Takedown: []
+    })
+
+    const approve = useCallback((ev:React.MouseEvent, report:Report) => {
         ev.preventDefault()
-        isSpinning.value = true
+        // move into approved tab
+        // rm from queue
+        debug('approve', report)
 
-        try {
-            const res = await api.get()
-            debug('got a response...', res)
-            response.value = res.hello
-        } catch (_err) {
-            const err = _err as Error
-            debug('oh no', err)
+        const newQueue = tabStates.value.Queue.filter((r) => {
+            return (r.subject !== report.subject)
+        })
+
+        tabStates.value = {
+            ...tabStates.value,
+            Approved: [...tabStates.value.Approved, report],
+            Queue: newQueue
         }
-
-        isSpinning.value = false
     }, [])
 
-    const setCount = useCallback(async (ev:React.MouseEvent) => {
+    const takedown = useCallback((ev:React.MouseEvent) => {
         ev.preventDefault()
-
-        count.value++
+        // move into takedown tab
+        // rm from queue
+        debug('takedown')
     }, [])
 
     return (
         <>
-            <h1>Vite + React</h1>
+            <nav>
+                {tabs.map(currentTab => {
+                    const className = [
+                        'tab',
+                        tab.value === currentTab ? 'active' : ''
+                    ].filter(Boolean)
 
-            <p>
-                This demonstrates front-end state with{NBSP}
-                <code>@preact/signals</code>, and shows calling our API
-                with <code>ky</code>. The button will show an animation
-                while the request is resolving. See the console where we are
-                using <code>@substrate-system/debug</code> to log
-                the response.
-            </p>
+                    return <button key={currentTab} className={className.join(' ')}>
+                        {currentTab}
+                    </button>
+                })}
+            </nav>
 
-            <h2>
-                CSS
-            </h2>
-            <p>
-                This is using <code>@substrate-system/a11y</code> and{NBSP}
-                <code>@substrate-system/css-normalize</code>.
-            </p>
+            <ul className="reports">
+                {reports.map(report => {
+                    return <li key={report.subject} className="report">
+                        <div>{report.subject}</div>
+                        <div>{report.reportType}</div>
+                        {report.comment ?
+                            <div>{report.comment}</div> :
+                            null
+                        }
 
-            <hr />
-
-            <div className="card">
-                <p>
-                    <span>hello: </span>
-                    <span>{'' + response.value}</span>
-                </p>
-                <div className='controls'>
-                    <Button onClick={setCount}>
-                        count is: {count}
-                    </Button>
-                    <Button onClick={callApi}>
-                        Call the API
-                    </Button>
-                </div>
-
-                <p>
-                    Edit <code>src/App.tsx</code> and save to test HMR
-                </p>
-            </div>
+                        <div className='controls'>
+                            <button
+                                onClick={(ev) => approve(ev, report)}
+                                className="approve"
+                            >Approve</button>
+                            <button
+                                onClick={takedown}
+                                className="takedown"
+                            >Takedown</button>
+                        </div>
+                    </li>
+                })}
+            </ul>
         </>
     )
 }
