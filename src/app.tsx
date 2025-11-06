@@ -68,7 +68,7 @@ export const App:FunctionComponent<{ api:typeof Api }> = function App () {
     // const response = useSignal<string|null>(null)
     const tab = useSignal<Tab>('Queue')
 
-    const tabStates = useSignal({
+    const tabStates = useSignal<Record<Exclude<Tab, 'All'>, Report[]>>({
         Queue: [...reports],
         Approved: [],
         Takedown: []
