@@ -1,7 +1,5 @@
 # Demo
 
-[![tests](https://img.shields.io/github/actions/workflow/status/nichoth/template-react/nodejs.yml?style=flat-square)](https://github.com/nichoth/template-react/actions/workflows/nodejs.yml)
-
 Example application.
 
 <details><summary><h2>Contents</h2></summary>
